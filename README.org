@@ -1,4 +1,3 @@
-cloud-scripts
-=============
+* cloud-scripts
 
 Scripts useful in cloud provisioning and setup
