@@ -19,7 +19,7 @@ sudo yum -y install mlocate htop tmux git
 # copy DMX-h files from dmx S3 bucket
 dmxrpm="dmexpress-7.14.3-1.x86_64.rpm"
 echo Installing DMX-h
-hadoop fs -copyToLocal s3://syncsortpocsoftware/"$dmxrpm"
+hadoop fs -copyToLocal s3://syncsortpocsoftware/dmexpress/"$dmxrpm"
 
 ## install the pre-licensed DMX-h .rpm and set paths globally
 sudo rpm -i "$dmxrpm" && echo "Installed $dmxrpm"
