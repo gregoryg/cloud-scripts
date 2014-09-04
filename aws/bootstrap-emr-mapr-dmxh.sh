@@ -21,7 +21,7 @@ sudo apt-get -y install locate htop tmux git
 # copy DMX-h files from dmx S3 bucket
 dmxrpm="dmexpress_7.14.3-2_amd64.deb"
 echo Installing DMX-h
-hadoop fs -copyToLocal s3://syncsortpocsoftware/"$dmxrpm" .
+hadoop fs -copyToLocal s3://syncsortpocsoftware/dmexpress/"$dmxrpm" .
 
 ## install the pre-licensed DMX-h .rpm and set paths globally
 sudo dpkg -i "$dmxrpm" && echo "Installed $dmxrpm"
