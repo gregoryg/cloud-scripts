@@ -11,7 +11,7 @@ ismaster=`python -c 'import json; fp=open("'$EMR_CONFIG_PATH'","r"); print json.
 cd ~hadoop
 
 # Get Hadoop version in order to build setup-hdfs.sh script
-hversion = `hadoop version | cut -d' ' -f2` 
+hversion=`hadoop version | head -1 | cut -d' ' -f2` 
 
 # Install tools
 sudo yum -y install mlocate htop tmux git
