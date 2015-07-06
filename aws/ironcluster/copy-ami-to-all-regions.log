@@ -1,0 +1,33 @@
+eu-central-1
+{
+    "ImageId": "ami-72b2896f"
+}
+sa-east-1
+{
+    "ImageId": "ami-ef7ff2f2"
+}
+ap-northeast-1
+{
+    "ImageId": "ami-b860cdb8"
+}
+eu-west-1
+{
+    "ImageId": "ami-86dd9df1"
+}
+Skipping region us-east-1 (same as source region)
+us-west-1
+{
+    "ImageId": "ami-7daf5f39"
+}
+us-west-2
+{
+    "ImageId": "ami-d94f4ee9"
+}
+ap-southeast-2
+{
+    "ImageId": "ami-f54602cf"
+}
+ap-southeast-1
+{
+    "ImageId": "ami-80f7f6d2"
+}
