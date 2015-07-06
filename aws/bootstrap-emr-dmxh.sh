@@ -14,12 +14,37 @@ cd ~hadoop
 hversion=`hadoop version | head -1 | cut -d' ' -f2` 
 
 # Install tools
-sudo yum -y install mlocate htop tmux git
+sudo yum -y install mlocate htop tmux git curl wget finger
 
+## Use the following lines if installing from .rpm
 # copy DMX-h files from dmx S3 bucket
-dmxrpm="dmexpress-7.14.3-1.x86_64.rpm"
+dmxrpmdir="8.1.2"
+dmxrpm="dmexpress-8.1.2-1.x86_64.rpm"
 echo Installing DMX-h
-hadoop fs -copyToLocal s3://syncsortpocsoftware/dmexpress/"$dmxrpm"
+hadoop fs -copyToLocal s3://syncsortpocsoftware/dmexpress/"$dmxrpmdir"/"$dmxrpm"
+
+## Use the following lines if installing from .tar
+# dmxtar="$dmxrpmdir/dmexpress.tar"
+# dmxfile=`basename $dmxtar`
+# rm "$dmxfile"
+# hadoop fs -copyToLocal s3://syncsortpocsoftware/dmexpress/AWS-2015-DMExpressLicense.txt
+# hadoop fs -copyToLocal s3://syncsortpocsoftware/dmexpress/"$dmxtar"
+# tar xf "$dmxfile"
+# mv AWS-2015-DMExpressLicense.txt dmexpress/DMExpressLicense.txt && cd dmexpress
+# ./install <<EOF
+
+# y
+# 1
+# .
+
+# A
+
+# .
+# EOF
+# cd ..
+# sudo rm -rf /usr/dmexpress/
+# sudo mv -iv dmexpress /usr/
+
 
 ## install the pre-licensed DMX-h .rpm and set paths globally
 sudo rpm -i "$dmxrpm" && echo "Installed $dmxrpm"
@@ -54,10 +79,11 @@ EOF
 
 echo "
 #!/bin/bash
-## update slaves file on master node; DOES NOT WORK because runs too early
-hdfs dfsadmin -report | grep ^Name | cut -f2 -d: | tr -d ' ' > /home/hadoop/.versions/$hversion/etc/hadoop/slaves
+## update slaves file on master node
+hdfs dfsadmin -report | grep ^Name | cut -f2 -d: | tr -d ' ' > /home/hadoop/.versions/"$hversion"/etc/hadoop/slaves
 
 hadoop fs -mkdir -p /UCA/HDFSData
+hadoop fs -mkdir -p /user/hadoop
 " > ~hadoop/setup-hdfs.sh
 chmod u+rx ~hadoop/setup-hdfs.sh
 

@@ -39,7 +39,8 @@ instance_info = Emr::JsonInfoFile.new('instance')
 @hadoop_apps="/home/hadoop/.versions"
 
 @s3_spark_base_url="https://s3.amazonaws.com/elasticmapreduce/samples/spark"
-@spark_url="http://d3kbcqa49mib13.cloudfront.net/spark-1.0.2-bin-hadoop2.tgz"
+# @spark_url="http://d3kbcqa49mib13.cloudfront.net/spark-1.0.2-bin-hadoop2.tgz"
+@spark_url="http://d3kbcqa49mib13.cloudfront.net/spark-1.1.0-bin-hadoop2.4.tgz"
 @spark_version="1.0.0"
 @shark_version="0.9.1"
 @scala_version="2.10.3"
