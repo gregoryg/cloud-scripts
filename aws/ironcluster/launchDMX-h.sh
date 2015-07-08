@@ -268,7 +268,7 @@ then
     reportError "Invalid launchType. The launchType can be one of: emr, windows, both"
 fi
 
-# Extract region thorugh the metadata service
+# Extract region through the metadata service
 if [ -z $region ]
 then
     availability_zone=`ec2-metadata -z |cut -d':' -f2|tr -d ' '`
