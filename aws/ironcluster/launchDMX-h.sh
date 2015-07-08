@@ -94,28 +94,31 @@ getWindowsAmiId()
   else
     case "$region" in
         us-east-1)
-            echo "ami-3b8bb652"
+            echo "ami-954ba3fe"
             ;;
         us-west-1)
-            echo "ami-d6b58793"
+            echo "ami-7daf5f39"
             ;;
         us-west-2)
-            echo "ami-c07414f0"
+            echo "ami-d94f4ee9"
             ;;
         sa-east-1)
-            echo "ami-db74d4c6"
+            echo "ami-ef7ff2f2"
             ;;
         eu-west-1)
-            echo "ami-b44bbfc3"
+            echo "ami-86dd9df1"
             ;;
         ap-northeast-1)
-            echo "ami-c52f47c4"
+            echo "ami-b860cdb8"
             ;;
         ap-southeast-1)
-            echo "ami-c0396f92"
+            echo "ami-80f7f6d2"
             ;;
         ap-southeast-2)
-            echo "ami-a758c69d"
+            echo "ami-f54602cf"
+            ;;
+        eu-central-1)
+            echo "ami-72b2896f"
             ;;
         *)
             reportError "Invalid region ($region) is detected."
@@ -126,20 +129,7 @@ getWindowsAmiId()
 
 getMasterPublicDnsName()
 {
-  master_public_dns_name=`elastic-mapreduce  \
-    --access-id $access_id \
-    --private-key $private_key \
-    --list --region $region | grep $job_id | awk -F" " '{print $3}' | grep -o 'ec2.*com'`
-
-  if [ -z "$master_public_dns_name" ]
-  then
-     master_public_dns_name=`elastic-mapreduce  \
-      --access-id $access_id \
-      --private-key $private_key \
-      --region $region \
-      --describe \
-      --jobflow $job_id | grep 'MasterPublicDnsName' | grep -o 'ec2.*com'`
-  fi
+    master_public_dns_name=`aws emr describe-cluster --cluster-id $job_id --region $region|python -c 'import json,sys; g=json.load(sys.stdin); print g["Cluster"]["MasterPublicDnsName"]'`
 
   echo "$master_public_dns_name" 
 }
@@ -234,6 +224,9 @@ while [ $# -ne 0 ]; do
     esac
 done
 
+access_id=`aws configure get aws_access_key_id --profile dmxh`
+private_key=`aws configure get aws_secret_access_key --profile dmxh`
+
 # Common options error checking
 if [ -z $access_id ]
 then
@@ -244,6 +237,21 @@ if [ -z $private_key ]
 then
     private_key=$AWS_SECRET_KEY
 fi
+
+if [ -z $access_id ] || [ -z $private_key ]
+then
+    echo "Enter your AWS access key and your AWS secret access key; leave region and output format blank."
+    command="aws configure --profile dmxh"
+    $command
+    if [ "$?" -ne 0 ]; then
+	echo "the aws configure command did not run correctly.  Please assure the aws command line client is installed correctly and re-run this script."
+	exit
+    fi
+fi
+
+access_id=`aws configure get aws_access_key_id --profile dmxh`
+private_key=`aws configure get aws_secret_access_key --profile dmxh`
+
 
 if [ -z $access_id ] || [ -z $private_key ] || [ -z $keypair_name ] || [ -z $keypair_location ]
 then
@@ -263,7 +271,7 @@ fi
 # Extract region thorugh the metadata service
 if [ -z $region ]
 then
-    availabilityZone=`GET http://169.254.169.254/latest/meta-data/placement/availability-zone 2>&1`
+    availability_zone=`ec2-metadata -z |cut -d':' -f2|tr -d ' '`
     exitCode=$?
     if [ $exitCode == 0 ]
     then
@@ -290,50 +298,37 @@ launchEMR()
      reportError "The number of EC2 instances in the EMR cluster must be greater than zero."
   fi
 
-  productCode=`GET http://169.254.169.254/latest/meta-data/product-codes 2>&1`
-  exitCode=$?
-  if [ $exitCode != 0 ]
-  then
-      reportError "Unable to retrieve the product code using the metadata service. Please contact Syncsort Technical Support at techsupport@syncsort.com."
-  fi
-  if [ $productCode == "bxx6717l7fy3qq5eszo4g1h24" ]
-  then
-      checkNumInstances 10
-  elif [ $productCode == "5neqjmrzp95dg2mgmgiqa0vjr" ]
-  then
-      checkNumInstances 50
-  elif [ $productCode == "cbxgp51mopoqc20ot710bsh3e" ]
-  then
-      checkNumInstances 100
-  elif [ $productCode == "btcmwy2uh30tfqpvw087v215f" ]
-  then
-      checkNumInstances -1
-  else
-      reportError "The product code ($productCode) is not a valid product code."
+  if [ $num_instances -gt 10 ]
+  then 
+     reportError "The number of EC2 instances in the EMR cluster must be less than ten.  To run a larger cluster please see http://community.syncsort.com/group/ironcluster"
   fi
 
-  HADOOP_VERSION="2.2.0"
-  AMI_VERSION="3.0.2"
-  DMX_VERSION="7.13.10"
+  checkNumInstances 10
+  HADOOP_VERSION="2.4.0"
+  AMI_VERSION="3.8.0"
+  DMX_VERSION="8.1.2"
+  CLUSTER_NAME="Ironcluster EMR `date '+%Y%m%d-%T'`"
   echoMessage "\nStarting Hadoop $HADOOP_VERSION Elastic MapReduce Cluster using AMI $AMI_VERSION with $num_instances $instance_type instances (this will create additional resources in your account, for which you may incur additional charges)..."
   echoMessage "-------------------------------------------------------------------------------------"
 
   DMEXPRESS_BUCKET=sserpxemd
-  command="elastic-mapreduce --verbose \
-  --create \
-  --ami-version $AMI_VERSION \
-  --bootstrap-action s3://elasticmapreduce/bootstrap-actions/configure-hadoop --args \"-C,s3://$DMEXPRESS_BUCKET/$DMX_VERSION/config.xml\" \
-  --bootstrap-action \"s3://$DMEXPRESS_BUCKET/$DMX_VERSION/rpminstall.sh\" \
-  --bootstrap-action s3://elasticmapreduce/bootstrap-actions/configure-hadoop --args \"-y,yarn.log-aggregation-enable=true\" \
-  --alive \
-  --instance-type $instance_type \
-  --instance-count $num_instances \
-  --access-id $access_id \
-  --private-key $private_key \
-  --key-pair $keypair_name \
-  --key-pair-file $keypair_location \
-  --region $region"
+  command="aws emr create-cluster \
+      --name \"$CLUSTER_NAME\" \
+      --profile dmxh \
+      --no-visible-to-all-users \
+      --ami-version $AMI_VERSION \
+      --instance-type $instance_type \
+      --instance-count $num_instances \
+      --ec2-attributes KeyName=$keypair_name \
+      --region $region \
+      --applications Name=Hive \
+      --no-auto-terminate \
+      --bootstrap-actions Name='Config',Path='s3://elasticmapreduce/bootstrap-actions/configure-hadoop',Args='-C,s3://$DMEXPRESS_BUCKET/$DMX_VERSION/config.xml' \
+      Name='DMX-h',Path='s3://$DMEXPRESS_BUCKET/$DMX_VERSION/rpminstall.sh' \
+      Name='Aggregate',Path='s3://elasticmapreduce/bootstrap-actions/configure-hadoop',Args=['-y','yarn.log-aggregation-enable=true','-y','yarn.log-aggregation.retain-seconds=-1','-y','yarn.log-aggregation.retain-check-interval-seconds=3000','-y','yarn.nodemanager.remote-app-log-dir=s3://$log_uri']"
+
   
+
   if [ ! -z $log_uri ]
   then
       command="$command --log-uri $log_uri"
@@ -349,13 +344,16 @@ launchEMR()
       command="$command --subnet $subnet_id"
   fi
  
+  echo $command
   job_status=`eval $command`
   exitCode=$?
   # Check for errors
   error=`echo "$job_status" | grep "Error: "`
   checkAmazonToolsExitCode $exitCode "$error"
 
-  job_id=`echo "$job_status" | grep "Created job flow" | awk -F" " '{print $4}'`
+  
+
+  job_id=`echo "$job_status" | python -c 'import json,sys; g=json.load(sys.stdin); print g["ClusterId"]'`
   echoMessage "Created job flow $job_id"
   echoSameLine "Job flow is in "STARTING" state. Waiting for the job flow to go into the "WAITING" state..."
 
@@ -363,12 +361,10 @@ launchEMR()
   waiting_state="WAITING"
   waitingTime=0
   while [ "$job_status" != "$waiting_state" ]; do
-    job_status=`elastic-mapreduce \
-    --access-id $access_id \
-    --private-key $private_key \
-    --region $region \
-    --list 2>&1 | grep $job_id | awk -F" " '{print $2}'`
- 
+      job_status=`aws emr describe-cluster \
+                      --cluster-id "$job_id" \
+                      --region $region 2>&1 | python -c 'import json,sys; g=json.load(sys.stdin); print g["Cluster"]["Status"]["State"]'`
+
     if [ "$job_status" == "FAILED" -o "$job_status" == "TERMINATED" ]
     then
         echoMessage ""
@@ -400,7 +396,7 @@ launchEMR()
 
   # Update the hadoop client configs
   echoSameLine "Updating Hadoop client configuration files on the DMX-h ETL Server..."
-  HADOOP_CLIENT_DIR=/etc/hadoop-2.2.0
+  HADOOP_CLIENT_DIR=/etc/hadoop-2.4.0
   sudo rm -f $HADOOP_CLIENT_DIR/etc/hadoop/core-site.xml > /dev/null
   sudo rm -f $HADOOP_CLIENT_DIR/etc/hadoop/yarn-site.xml > /dev/null
   sudo cp $HADOOP_CLIENT_DIR/etc/hadoop/core-site.xml.template $HADOOP_CLIENT_DIR/etc/hadoop/core-site.xml
@@ -410,12 +406,7 @@ launchEMR()
   
   # Create SOCKS proxy tunnel between ETL Server and the EMR job flow
   echoSameLine "Creating a SOCKS proxy tunnel between this ETL Server and the masternode in the EMR cluster..."
-  elastic-mapreduce \
-    --access-id $access_id \
-    --private-key $private_key \
-    --key-pair-file $keypair_location \
-    --region $region \
-    -j $job_id --socks >> $log_file 2>&1 &
+  aws emr socks --cluster-id "$job_id" --key-pair-file "$keypair_location" --region "$region" >> $log_file 2>&1 &
   pid=$!
   sleep 3
   proxy_process=`ps -ef | grep "$pid" | grep -v grep`
@@ -423,7 +414,7 @@ launchEMR()
   then
       echoMessage "\nUnable to create a SOCKS proxy tunnel between this ETL Server and the masternode in the EMR cluster."
       echoMessage "Use 'ps -ef | grep ssh' to make sure that there is no other existing SOCKS proxy tunnel already running."
-      echoMessage "You can start the SOCKS proxy tunnel by running: elastic-mapreduce --access-id <access id> --private-key <private key> --key-pair-file <keypair file> -j <job id> --socks &"
+      echoMessage "You can start the SOCKS proxy tunnel by running: aws emr socks --key-pair-file <keypair file> --cluster-id <job id> --region <region> &"
       echoMessage "Please run the following command to setup HDFS directories once you have created the SOCKS proxy tunnel: sudo -u hadoop /home/hadoop/prepCluster.sh"
   else
      echoMessage "Done"
