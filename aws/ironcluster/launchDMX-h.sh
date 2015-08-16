@@ -305,9 +305,9 @@ launchEMR()
     fi
 
     checkNumInstances 10
-    HADOOP_VERSION="2.4.0"
-    AMI_VERSION="3.8.0"
-    DMX_VERSION="8.1.2"
+    HADOOP_VERSION="2.6.0"
+    AMI_VERSION="4.0.0"
+    DMX_VERSION="8.2.3"
     CLUSTER_NAME="Ironcluster EMR `date '+%Y%m%d-%T'`"
     echoMessage "\nStarting Hadoop $HADOOP_VERSION Elastic MapReduce Cluster using AMI $AMI_VERSION with $num_instances $instance_type instances (this will create additional resources in your account, for which you may incur additional charges)..."
     echoMessage "-------------------------------------------------------------------------------------"
@@ -317,18 +317,16 @@ launchEMR()
       --name \"$CLUSTER_NAME\" \
       --profile dmxh \
       --no-visible-to-all-users \
-      --ami-version $AMI_VERSION \
+      --release-label emr-4.0.0 \
+      --use-default-roles \
       --instance-type $instance_type \
       --instance-count $num_instances \
       --ec2-attributes KeyName=$keypair_name \
       --region $region \
       --applications Name=Hive \
       --no-auto-terminate \
-      --bootstrap-actions Name='Config',Path='s3://elasticmapreduce/bootstrap-actions/configure-hadoop',Args='-C,s3://$DMEXPRESS_BUCKET/$DMX_VERSION/config.xml' \
-      Name='DMX-h',Path='s3://$DMEXPRESS_BUCKET/$DMX_VERSION/rpminstall.sh' \
-      Name='Aggregate',Path='s3://elasticmapreduce/bootstrap-actions/configure-hadoop',Args=['-y','yarn.log-aggregation-enable=true','-y','yarn.log-aggregation.retain-seconds=-1','-y','yarn.log-aggregation.retain-check-interval-seconds=3000','-y','yarn.nodemanager.remote-app-log-dir=s3://$log_uri']"
+      --bootstrap-actions Name='DMX-h',Path='s3://$DMEXPRESS_BUCKET/$DMX_VERSION/rpminstall.sh'"
 
-    
 
     if [ ! -z $log_uri ]
     then
@@ -398,7 +396,7 @@ launchEMR()
 
     # Update the hadoop client configs
     echoSameLine "Updating Hadoop client configuration files on the DMX-h ETL Server..."
-    HADOOP_CLIENT_DIR=/etc/hadoop-2.2.0
+    HADOOP_CLIENT_DIR=/etc/hadoop-2.6.0
     sudo rm -f $HADOOP_CLIENT_DIR/etc/hadoop/core-site.xml > /dev/null
     sudo rm -f $HADOOP_CLIENT_DIR/etc/hadoop/yarn-site.xml > /dev/null
     sudo cp $HADOOP_CLIENT_DIR/etc/hadoop/core-site.xml.template $HADOOP_CLIENT_DIR/etc/hadoop/core-site.xml
@@ -416,7 +414,7 @@ launchEMR()
     then
 	echoMessage "\nUnable to create a SOCKS proxy tunnel between this ETL Server and the masternode in the EMR cluster."
 	echoMessage "Use 'ps -ef | grep ssh' to make sure that there is no other existing SOCKS proxy tunnel already running."
-	echoMessage "You can start the SOCKS proxy tunnel by running: aws emr socks --profile dmxh --key-pair-file <keypair file> --cluster-id <job id> --region <region> &"
+	echoMessage "You can start the SOCKS proxy tunnel by running: aws emr socks --profile dmxh --key-pair-file <keypair file> --cluster-id <job id> --region <region> \&"
 	echoMessage "Please run the following command to setup HDFS directories once you have created the SOCKS proxy tunnel: sudo -u hadoop /home/hadoop/prepCluster.sh"
     else
 	echoMessage "Done"
@@ -440,7 +438,7 @@ launchEMR()
 launchWindowsAMI()
 {
     # Start Windows AMI
-    echoMessage "\nStarting the DMX-h Windows EC2 instance (this will create additional resources in your account, for which you may incur additional charges)..."
+    echoMessage "\nStarting the DMX-h Windows EC2 instance \(this will create additional resources in your account, for which you may incur additional charges\)..."
     echoMessage "------------------------------------------"
 
     # Check if the group has been provided in argument
@@ -533,7 +531,7 @@ launchWindowsAMI()
 	echoMessage "DMX-h Windows instance Public DNS: $windows_public_dns"
     fi
 
-    echoMessage "\nThe DMX-h Windows instance ($instance_id) launch has been completed successfully.\n"
+    echoMessage "\nThe DMX-h Windows instance \($instance_id\) launch has been completed successfully.\n"
 }
 
 # Create 'hadoop' user (if it does not exist) and prepare
@@ -544,7 +542,7 @@ setupHadoopUser()
     exitCode=$?
     if [ "$exitCode" != 0 ]
     then
-	echoSameLine "\nCreating 'hadoop' user ('hadoop' user is required to submit Ironcluster Jobs to EMR cluster and perform HDFS operations)..."
+	echoSameLine "\nCreating 'hadoop' user \('hadoop' user is required to submit Ironcluster Jobs to EMR cluster and perform HDFS operations\)..."
 	add_user=`sudo useradd -m -d /home/hadoop hadoop > /dev/null 2>&1`
 	exitCode=$?
 	if [ "$exitCode" != 0 ]

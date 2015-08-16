@@ -15,12 +15,12 @@
 <configuration>
 
 <!-- Site specific YARN configuration properties -->
-<property><name>yarn.nodemanager.webapp.address</name><value>MASTER_PUBLIC_DNS_NAME:9035</value></property>
-<property><name>yarn.resourcemanager.webapp.address</name><value>MASTER_PUBLIC_DNS_NAME:9026</value></property>
-<property><name>yarn.resourcemanager.admin.address</name><value>MASTER_PUBLIC_DNS_NAME:9025</value></property>
-<property><name>yarn.resourcemanager.resource-tracker.address</name><value>MASTER_PUBLIC_DNS_NAME:9023</value></property>
-<property><name>yarn.resourcemanager.scheduler.address</name><value>MASTER_PUBLIC_DNS_NAME:9024</value></property>
-<property><name>yarn.resourcemanager.address</name><value>MASTER_PUBLIC_DNS_NAME:9022</value></property>
-<property><name>yarn.nodemanager.localizer.address</name><value>MASTER_PUBLIC_DNS_NAME:9033</value></property>
-<property><name>yarn.nodemanager.address</name><value>MASTER_PUBLIC_DNS_NAME:9103</value></property>
+<property><name>yarn.nodemanager.webapp.address</name><value>MASTER_PUBLIC_DNS_NAME:8042</value></property>
+<property><name>yarn.resourcemanager.webapp.address</name><value>MASTER_PUBLIC_DNS_NAME:8088</value></property>
+<property><name>yarn.resourcemanager.admin.address</name><value>MASTER_PUBLIC_DNS_NAME:8033</value></property>
+<property><name>yarn.resourcemanager.resource-tracker.address</name><value>MASTER_PUBLIC_DNS_NAME:8031</value></property>
+<property><name>yarn.resourcemanager.scheduler.address</name><value>MASTER_PUBLIC_DNS_NAME:8030</value></property>
+<property><name>yarn.resourcemanager.address</name><value>MASTER_PUBLIC_DNS_NAME:8032</value></property>
+<property><name>yarn.nodemanager.localizer.address</name><value>MASTER_PUBLIC_DNS_NAME:8040</value></property>
+<property><name>yarn.nodemanager.address</name><value>MASTER_PUBLIC_DNS_NAME:0</value></property>
 </configuration>

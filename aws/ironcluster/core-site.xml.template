@@ -17,7 +17,7 @@
 <!-- Put site-specific property overrides in this file. -->
 
 <configuration>
-<property> <name>fs.default.name</name> <value>hdfs://MASTER_PUBLIC_DNS_NAME:9000/</value> </property> 
+<property> <name>fs.default.name</name> <value>hdfs://MASTER_PUBLIC_DNS_NAME:8020/</value> </property> 
 <property> <name>hadoop.socks.server</name> <value>localhost:8157</value> </property> 
 <property> <name>hadoop.rpc.socket.factory.class.default</name> <value>org.apache.hadoop.net.SocksSocketFactory</value> </property>
 </configuration>
