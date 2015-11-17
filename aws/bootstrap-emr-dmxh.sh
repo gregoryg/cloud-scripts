@@ -62,7 +62,9 @@ export PATH LD_LIBRARY_PATH DMXHOME DMX_HADOOP_MRV HDFS_SOURCE_DIR HDFS_TARGET_D
 
 ## Things to be done only on the master node
 if [ "True" == "$ismaster" ]; then
-    echo 'export PS1="[\u@MASTER \W]$ "' >> ~hadoop/.bashrc
+    echo '
+export PS1="[\u@MASTER \W]$ "
+' >> ~hadoop/.bashrc
 ## install, configure, and start the DMX daemon
     echo Configuring dmxd on master node
     . /etc/profile
