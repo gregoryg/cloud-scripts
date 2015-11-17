@@ -14,7 +14,7 @@ cd ~hadoop
 hversion=`hadoop version | head -1 | cut -d' ' -f2` 
 
 # Install tools
-sudo yum -y install mlocate htop tmux git curl wget finger
+sudo yum -y install mlocate htop tmux git curl wget finger aws-cli
 
 ## Use the following lines if installing from .rpm
 # copy DMX-h files from dmx S3 bucket
@@ -53,7 +53,6 @@ DMXHOME=/usr/dmexpress
 PATH=$PATH:$DMXHOME/bin:/home/hadoop/.versions/hive-0.11.0/bin
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DMXHOME/lib
 DMX_HADOOP_MRV=2
-DMX_HADOOP_STREAMING_JAR=/home/hadoop/contrib/streaming/hadoop-streaming.jar
 HDFS_SOURCE_DIR=/UCA/HDFSData/Source
 HDFS_TARGET_DIR=/UCA/HDFSData/Target
 DMXHADOOP_EXAMPLES_DIR=/UCA
@@ -92,12 +91,6 @@ fi
 
 ## personal environment setup
     hadoop fs -copyToLocal  s3://syncsortpocsoftware/.tmux.conf
-
-# ## just to make s3 a little easier to deal with
-#     echo Installing s3cmd
-#     wget -O -  http://s3tools.org/repo/RHEL_6/s3tools.repo | sudo tee /etc/yum.repos.d/s3tools.repo
-#     sudo yum -y install s3cmd
-# fi
 
 # ## copy over UCA jobs and data and set up script to set up env
 echo "
