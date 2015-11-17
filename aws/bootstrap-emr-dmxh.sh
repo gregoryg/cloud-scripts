@@ -14,12 +14,12 @@ cd ~hadoop
 hversion=`hadoop version | head -1 | cut -d' ' -f2` 
 
 # Install tools
-sudo yum -y install mlocate htop tmux git curl wget finger aws-cli
+sudo yum -y install mlocate htop tmux git curl wget finger
 
 ## Use the following lines if installing from .rpm
 # copy DMX-h files from dmx S3 bucket
-dmxrpmdir="8.1.2"
-dmxrpm="dmexpress-8.1.2-1.x86_64.rpm"
+dmxrpmdir="8.4"
+dmxrpm="dmexpress-8.4.6-1.x86_64.rpm"
 echo Installing DMX-h
 hadoop fs -copyToLocal s3://syncsortpocsoftware/dmexpress/"$dmxrpmdir"/"$dmxrpm"
 
@@ -50,14 +50,14 @@ hadoop fs -copyToLocal s3://syncsortpocsoftware/dmexpress/"$dmxrpmdir"/"$dmxrpm"
 sudo rpm -i "$dmxrpm" && echo "Installed $dmxrpm"
 echo '
 DMXHOME=/usr/dmexpress
-PATH=$PATH:$DMXHOME/bin:/home/hadoop/.versions/hive-0.11.0/bin
+PATH=$PATH:$DMXHOME/bin
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DMXHOME/lib
 DMX_HADOOP_MRV=2
 HDFS_SOURCE_DIR=/UCA/HDFSData/Source
 HDFS_TARGET_DIR=/UCA/HDFSData/Target
 DMXHADOOP_EXAMPLES_DIR=/UCA
 LOCAL_SOURCE_DIR=/UCA/Data/Source
-export PATH LD_LIBRARY_PATH DMXHOME DMX_HADOOP_MRV DMX_HADOOP_STREAMING_JAR HDFS_SOURCE_DIR HDFS_TARGET_DIR DMXHADOOP_EXAMPLES_DIR LOCAL_SOURCE_DIR
+export PATH LD_LIBRARY_PATH DMXHOME DMX_HADOOP_MRV HDFS_SOURCE_DIR HDFS_TARGET_DIR DMXHADOOP_EXAMPLES_DIR LOCAL_SOURCE_DIR
 ' | sudo tee /etc/profile.d/dmexpress.sh
 
 ## Things to be done only on the master node
@@ -108,6 +108,6 @@ echo "
 " > ~hadoop/setup-uca.sh
 chmod u+rx ~hadoop/setup-uca.sh
 
-    sudo updatedb&
+sudo updatedb&
 
-    echo Done with bootstrap script
+echo Done with bootstrap script
