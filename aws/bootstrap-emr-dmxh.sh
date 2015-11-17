@@ -79,7 +79,7 @@ EOF
 echo "
 #!/bin/bash
 ## update slaves file on master node
-hdfs dfsadmin -report | grep ^Name | cut -f2 -d: | tr -d ' ' > /home/hadoop/.versions/"$hversion"/etc/hadoop/slaves
+hdfs dfsadmin -report | grep ^Name | cut -f2 -d: | tr -d ' ' | sudo tee /etc/hadoop/conf/slaves
 
 hadoop fs -mkdir -p /UCA/HDFSData
 hadoop fs -mkdir -p /user/hadoop
